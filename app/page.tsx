@@ -1,17 +1,38 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import Link from "next/link";
 import { QRCodeCanvas } from "qrcode.react";
+
+// ✅ Inline QR component
+function QRImage({ value }: { value: string }) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [imgSrc, setImgSrc] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (canvasRef.current) {
+      const dataUrl = canvasRef.current.toDataURL("image/png");
+      setImgSrc(dataUrl);
+    }
+  }, []);
+
+  return (
+    <>
+      <div style={{ display: "none" }}>
+        <QRCodeCanvas value={value} size={256} ref={canvasRef} />
+      </div>
+      {imgSrc && <img src={imgSrc} alt="QR Code" width={256} height={256} />}
+    </>
+  );
+}
 
 export default function Home() {
   const [password, setPassword] = useState("");
   const [sessions, setSessions] = useState<any[]>([]);
   const [authenticated, setAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true); // prevent flash
+  const [loading, setLoading] = useState(true);
 
-  // Check cookie auth on load
   useEffect(() => {
     axios
       .get("/api/sessions", { withCredentials: true })
@@ -46,9 +67,7 @@ export default function Home() {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleLogin();
-    }
+    if (e.key === "Enter") handleLogin();
   };
 
   if (loading) return null;
@@ -85,34 +104,35 @@ export default function Home() {
           </div>
 
           <ul className="space-y-4">
-            {sessions.map((session) => (
-              <li key={session.id} className="border p-4 rounded">
-                <div>
-                  {new Date(session.datetime).toLocaleString("ko-KR", {
-                    dateStyle: "full",
-                    timeStyle: "short",
-                  })}
-                </div>
-                <div>
-                  {session.members.length > 0 && (
-                    <div>라인업: {session.members.join(", ")}</div>
-                  )}
-                  {session.members.length === 0 && (
-                    <div>전원 정시에 도착</div>
-                  )}
-                </div>
-                <Link href={`/${session.id}`}>
-                  <span className="text-blue-600 underline">
-                    출석 페이지 열기
-                  </span>
-                </Link>
-                <QRCodeCanvas
-                  value={`${window.location.origin}/${session.id}`}
-                  size={256}
-                  className="mt-2"
-                />
-              </li>
-            ))}
+            {sessions.map((session) => {
+              const sessionUrl = `${window.location.origin}/${session.id}`;
+              return (
+                <li key={session.id} className="border p-4 rounded">
+                  <div>
+                    {new Date(session.datetime).toLocaleString("ko-KR", {
+                      dateStyle: "full",
+                      timeStyle: "short",
+                    })}
+                  </div>
+                  <div>
+                    {session.members.length > 0 ? (
+                      <div>라인업: {session.members.join(", ")}</div>
+                    ) : (
+                      <div>전원 정시에 도착</div>
+                    )}
+                  </div>
+                  <Link href={`/${session.id}`}>
+                    <span className="text-blue-600 underline">
+                      출석 페이지 열기
+                    </span>
+                  </Link>
+
+                  <div className="mt-2">
+                    <QRImage value={sessionUrl} />
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}

@@ -7,7 +7,7 @@ import json
 from functools import wraps
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-from models import db, Member, Session, SessionMember
+from .models import db, Member, Session, SessionMember
 
 app = Flask(__name__)
 

@@ -70,19 +70,21 @@ export default function CreateSessionPage() {
         </button>
       </div>
 
-      <div className="px-4 py-6 max-w-xl w-full mx-auto overflow-x-hidden">
-        <label className="block mb-2 text-sm">날짜 선택*</label>
+      <label className="block mb-2 text-sm">날짜*</label>
+      <div className="pr-4">
         <input
           type="date"
-          className="border p-3 text-lg w-full max-w-full mb-4 rounded"
+          className="border p-3 text-lg w-full mb-4 rounded"
           value={date}
           onChange={(e) => setDate(e.target.value)}
         />
+      </div>
 
-        <label className="block mb-2 text-sm">시간 선택*</label>
+      <label className="block mb-2 text-sm">시간*</label>
+      <div className="pr-4">
         <input
           type="time"
-          className="border p-3 text-lg w-full max-w-full mb-4 rounded"
+          className="border p-3 text-lg w-full mb-4 rounded"
           value={time}
           onChange={(e) => setTime(e.target.value)}
         />

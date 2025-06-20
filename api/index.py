@@ -106,8 +106,7 @@ def get_sessions():
         })
     return jsonify(data)
 
-@app.route("/api/clean", methods=["GET"])
-@require_admin
+@app.route("/api/clean", methods=["GET"]) 
 def clean_expired_sessions():
     now = datetime.now(pytz.timezone("Australia/Sydney"))
 

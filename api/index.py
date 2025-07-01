@@ -35,7 +35,7 @@ def require_admin(f):
 
 def get_default_session_time():
     row = db.session.execute(
-        "SELECT value FROM settings WHERE key = 'default_session_time'"
+        text("SELECT value FROM settings WHERE key = 'default_session_time'")
     ).fetchone()
     if not row:
         return (16, 5)  # fallback default

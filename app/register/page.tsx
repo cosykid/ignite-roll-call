@@ -1,34 +1,29 @@
 "use client";
 
-import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
 export default function SessionCheckin() {
-  const params = useParams();
-  const sessionId = params?.sessionId;
-
   const [members, setMembers] = useState<string[]>([]);
   const [selectedName, setSelectedName] = useState("");
   const [status, setStatus] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!sessionId || typeof sessionId !== "string") return;
     axios
-      .get(`/api/${sessionId}`, { withCredentials: true })
+      .get("/api/session", { withCredentials: true })
       .then((res) => {
         setMembers(res.data.members);
       })
       .catch(() => {
         setStatus("Failed to load session.");
       });
-  }, [sessionId]);
+  }, []);
 
   const handleCheckIn = async () => {
-    if (!sessionId || typeof sessionId !== "string") return;
+    if (!selectedName) return;
     try {
       await axios.post(
-        `/api/${sessionId}/remove`,
+        "/api/session/remove",
         {
           name: selectedName,
         },

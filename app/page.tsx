@@ -29,15 +29,15 @@ function QRImage({ value }: { value: string }) {
 
 export default function Home() {
   const [password, setPassword] = useState("");
-  const [sessions, setSessions] = useState<any[]>([]);
+  const [session, setSession] = useState<any | null>(null);
   const [authenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     axios
-      .get("/api/sessions", { withCredentials: true })
+      .get("/api/session", { withCredentials: true })
       .then((res) => {
-        setSessions(res.data);
+        setSession(res.data);
         setAuthenticated(true);
       })
       .catch(() => {
@@ -55,10 +55,10 @@ export default function Home() {
         { password },
         { withCredentials: true }
       );
-      const res = await axios.get("/api/sessions", {
+      const res = await axios.get("/api/session", {
         withCredentials: true,
       });
-      setSessions(res.data);
+      setSession(res.data);
       setAuthenticated(true);
     } catch (err) {
       alert("Incorrect password.");
@@ -103,37 +103,38 @@ export default function Home() {
             </Link>
           </div>
 
-          <ul className="space-y-4">
-            {sessions.map((session) => {
-              const sessionUrl = `${window.location.origin}/${session.id}`;
-              return (
-                <li key={session.id} className="border p-4 rounded">
-                  <div>
-                    {new Date(session.datetime).toLocaleString("ko-KR", {
-                      dateStyle: "full",
-                      timeStyle: "short",
-                    })}
-                  </div>
-                  <div>
-                    {session.members.length > 0 ? (
-                      <div>라인업: {session.members.join(", ")}</div>
-                    ) : (
-                      <div>전원 정시에 도착</div>
-                    )}
-                  </div>
-                  <Link href={`/${session.id}`}>
-                    <span className="text-blue-600 underline">
-                      출석 페이지 열기
-                    </span>
-                  </Link>
-
-                  <div className="mt-2">
-                    <QRImage value={sessionUrl} />
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+          {session ? (
+            <div className="border p-4 rounded">
+              <div>
+                {new Date(session.datetime).toLocaleString("ko-KR", {
+                  dateStyle: "full",
+                  timeStyle: "short",
+                })}
+              </div>
+              <div className="mt-2">
+                <Link href="/remove" className="text-blue-600 underline">
+                  이번주 예배 명단 수정하기
+                </Link>
+                {session.members.length > 0 ? (
+                  <div>{session.members.join(", ")}</div>
+                ) : (
+                  <div>전원 정시에 도착</div>
+                )}
+              </div>
+              <div className="mt-2">
+                <Link href="/register">
+                  <span className="text-blue-600 underline">
+                    QR 링크
+                  </span>
+                </Link>
+              </div>
+              <div className="mt-2">
+                <QRImage value={`${window.location.origin}/register`} />
+              </div>
+            </div>
+          ) : (
+            <p>활성 세션이 없습니다.</p>
+          )}
         </div>
       )}
     </div>

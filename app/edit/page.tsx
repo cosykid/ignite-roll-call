@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import axios from "axios";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export default function EditSessionTimePage() {
   const router = useRouter();
@@ -19,11 +19,10 @@ export default function EditSessionTimePage() {
 
     try {
       await axios.put(
-        `/api/default-time`,
+        "/api/default-time",
         { time },
         { withCredentials: true }
       );
-
       router.push("/");
     } catch (err) {
       console.error(err);
@@ -34,7 +33,7 @@ export default function EditSessionTimePage() {
   return (
     <div className="p-4 sm:p-6 max-w-xl mx-auto">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">세션 시간 수정</h1>
+        <h1 className="text-2xl font-bold">예배 시간 수정</h1>
         <button
           className="text-sm text-blue-600 underline"
           onClick={() => router.push("/")}

@@ -98,8 +98,8 @@ export default function Home() {
             <Link href="/members" className="text-blue-600 underline">
               팀원 추가/삭제
             </Link>
-            <Link href="/create" className="text-blue-600 underline">
-              예배/연습 일정 추가
+            <Link href="/edit" className="text-blue-600 underline">
+              예배 시간 수정
             </Link>
           </div>
 

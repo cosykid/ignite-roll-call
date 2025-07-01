@@ -9,6 +9,7 @@ export default function EditMembersPage() {
   const [newMember, setNewMember] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(true); // added loading state
   const router = useRouter();
 
   useEffect(() => {
@@ -16,11 +17,16 @@ export default function EditMembersPage() {
       .get("/api/members", { withCredentials: true })
       .then((res) => setMembers(res.data))
       .catch(() => {
-        router.push("/"); // ⬅ Redirect to root on error
+        router.push("/"); // redirect on error
+      })
+      .finally(() => {
+        setLoading(false); // done loading
       });
   }, []);
 
   const handleSave = async () => {
+    setError("");
+    setSuccess("");
     try {
       await axios.post(
         "/api/members",
@@ -46,7 +52,7 @@ export default function EditMembersPage() {
   return (
     <div className="p-6 max-w-xl mx-auto">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">팀원 관리</h1>
+        <h1 className="text-2xl font-bold">팀원 관리자</h1>
         <button
           className="text-sm text-blue-600 underline"
           onClick={() => router.push("/")}
@@ -71,25 +77,33 @@ export default function EditMembersPage() {
         </button>
       </div>
 
-      <ul className="mb-4">
-        {members.map((name) => (
-          <li
-            key={name}
-            className="flex justify-between items-center border p-2 mb-2"
-          >
-            <span>{name}</span>
-            <button
-              className="text-red-600 text-sm"
-              onClick={() => removeMember(name)}
+      {loading ? (
+        <p className="text-gray-500 mb-4">팀원 목록을 불러오는 중...</p>
+      ) : (
+        <ul className="mb-4">
+          {members.map((name) => (
+            <li
+              key={name}
+              className="flex justify-between items-center border p-2 mb-2"
             >
-              삭제
-            </button>
-          </li>
-        ))}
-      </ul>
+              <span>{name}</span>
+              <button
+                className="text-red-600 text-sm"
+                onClick={() => removeMember(name)}
+              >
+                삭제
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
 
-      <button className="bg-blue-600 text-white px-4 py-2" onClick={handleSave}>
-        변경사항 저장
+      <button
+        className="bg-blue-600 text-white px-4 py-2"
+        onClick={handleSave}
+        disabled={loading}
+      >
+        Save
       </button>
 
       {error && <p className="text-red-600 mt-4">{error}</p>}

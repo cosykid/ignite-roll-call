@@ -9,20 +9,23 @@ export default function EditMembersPage() {
   const [newMember, setNewMember] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [loading, setLoading] = useState(true); // added loading state
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    axios
-      .get("/api/members", { withCredentials: true })
-      .then((res) => setMembers(res.data))
-      .catch(() => {
-        router.push("/"); // redirect on error
-      })
-      .finally(() => {
-        setLoading(false); // done loading
-      });
-  }, []);
+    const fetchData = async () => {
+      try {
+        await axios.get("/api/auth/check", { withCredentials: true });
+        const res = await axios.get("/api/members", { withCredentials: true });
+        setMembers(res.data);
+      } catch {
+        router.push("/");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [router]);
 
   const handleSave = async () => {
     setError("");
@@ -48,6 +51,8 @@ export default function EditMembersPage() {
   const removeMember = (name: string) => {
     setMembers((prev) => prev.filter((m) => m !== name));
   };
+
+  if (loading) return null;
 
   return (
     <div className="p-6 max-w-xl mx-auto">
@@ -77,31 +82,26 @@ export default function EditMembersPage() {
         </button>
       </div>
 
-      {loading ? (
-        <p className="text-gray-500 mb-4">팀원 목록을 불러오는 중...</p>
-      ) : (
-        <ul className="mb-4">
-          {members.map((name) => (
-            <li
-              key={name}
-              className="flex justify-between items-center border p-2 mb-2"
+      <ul className="mb-4">
+        {members.map((name) => (
+          <li
+            key={name}
+            className="flex justify-between items-center border p-2 mb-2"
+          >
+            <span>{name}</span>
+            <button
+              className="text-red-600 text-sm"
+              onClick={() => removeMember(name)}
             >
-              <span>{name}</span>
-              <button
-                className="text-red-600 text-sm"
-                onClick={() => removeMember(name)}
-              >
-                삭제
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+              삭제
+            </button>
+          </li>
+        ))}
+      </ul>
 
       <button
         className="bg-blue-600 text-white px-4 py-2"
         onClick={handleSave}
-        disabled={loading}
       >
         Save
       </button>

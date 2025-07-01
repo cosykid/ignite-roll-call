@@ -33,19 +33,23 @@ export default function Home() {
   const [authenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // ✅ On mount: check authentication first
   useEffect(() => {
-    axios
-      .get("/api/session", { withCredentials: true })
-      .then((res) => {
-        setSession(res.data);
+    const checkAuthAndLoadSession = async () => {
+      try {
+        await axios.get("/api/auth/check", { withCredentials: true });
         setAuthenticated(true);
-      })
-      .catch(() => {
+        // If authenticated, load the session data
+        const res = await axios.get("/api/session", { withCredentials: true });
+        setSession(res.data);
+      } catch (err) {
         setAuthenticated(false);
-      })
-      .finally(() => {
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    checkAuthAndLoadSession();
   }, []);
 
   const handleLogin = async () => {
@@ -55,11 +59,13 @@ export default function Home() {
         { password },
         { withCredentials: true }
       );
-      const res = await axios.get("/api/session", {
-        withCredentials: true,
-      });
-      setSession(res.data);
-      setAuthenticated(true);
+      // After login, re-check authentication and load session
+      const resAuth = await axios.get("/api/auth/check", { withCredentials: true });
+      if (resAuth.status === 200) {
+        setAuthenticated(true);
+        const resSession = await axios.get("/api/session", { withCredentials: true });
+        setSession(resSession.data);
+      }
     } catch (err) {
       alert("Incorrect password.");
       setAuthenticated(false);

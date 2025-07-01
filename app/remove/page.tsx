@@ -6,25 +6,30 @@ import { useRouter } from "next/navigation";
 
 export default function RemoveMembersPage() {
   const router = useRouter();
-
   const [session, setSession] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Load active session
   useEffect(() => {
-    axios
-      .get("/api/session", { withCredentials: true })
-      .then((res) => {
+    const fetchData = async () => {
+      try {
+        await axios.get("/api/auth/check", { withCredentials: true });
+        const res = await axios.get("/api/session", { withCredentials: true });
         setSession(res.data);
-      })
-      .catch(() => {
-        setError("세션 정보를 불러올 수 없습니다. 로그인 후 다시 시도하세요.");
-      })
-      .finally(() => {
+      } catch (err: any) {
+        if (err.response?.status === 404) {
+          // No active session
+          setSession(null);
+        } else {
+          // Not authenticated or other error
+          router.push("/");
+        }
+      } finally {
         setLoading(false);
-      });
-  }, []);
+      }
+    };
+    fetchData();
+  }, [router]);
 
   const handleRemoveMember = async (name: string) => {
     if (!confirm(`${name}님을 이번 세션에서 제거하시겠습니까?`)) return;
@@ -33,7 +38,6 @@ export default function RemoveMembersPage() {
         data: { name },
         withCredentials: true,
       });
-      // Refresh session
       const res = await axios.get("/api/session", {
         withCredentials: true,
       });
@@ -43,8 +47,14 @@ export default function RemoveMembersPage() {
     }
   };
 
-  if (loading) return <p className="p-4">로딩 중...</p>;
-  if (error) return <p className="p-4 text-red-600">{error}</p>;
+  if (loading) {
+    return <p className="p-4">로딩 중...</p>;
+  }
+
+  // No active session
+  if (!session) {
+    return <p className="p-4">활성 세션이 없습니다.</p>;
+  }
 
   return (
     <div className="p-6 max-w-xl mx-auto">
@@ -63,12 +73,12 @@ export default function RemoveMembersPage() {
           {new Date(session.datetime).toLocaleString("ko-KR", {
             dateStyle: "full",
             timeStyle: "short",
-          })}
-          {" "}예배
+          })}{" "}
+          예배
         </div>
       </div>
 
-      {session.members.length > 0 ? (
+      {session.members && session.members.length > 0 ? (
         <ul className="space-y-2">
           {session.members.map((name: string) => (
             <li

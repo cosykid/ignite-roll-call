@@ -51,6 +51,12 @@ def get_active_session():
     )
     return session
 
+# --- Cookie validator ---
+@app.route("/api/auth/check", methods=["GET"])
+@require_admin
+def check_auth():
+    return jsonify({"authenticated": True})
+
 # --- Login route ---
 @app.route("/api/login", methods=["POST"])
 def login():

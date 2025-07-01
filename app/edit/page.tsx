@@ -1,22 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 
 export default function EditSessionTimePage() {
   const router = useRouter();
-
   const [time, setTime] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Check auth
+  useEffect(() => {
+    axios
+      .get("/api/auth/check", { withCredentials: true })
+      .then(() => {
+        setLoading(false);
+      })
+      .catch(() => {
+        router.push("/");
+      });
+  }, [router]);
 
   const handleSubmit = async () => {
     if (!time) {
       setError("시간을 입력해주세요.");
       return;
     }
-
     try {
       await axios.put(
         "/api/default-time",
@@ -29,6 +40,8 @@ export default function EditSessionTimePage() {
       setError("세션 시간 업데이트에 실패했습니다.");
     }
   };
+
+  if (loading) return null;
 
   return (
     <div className="p-4 sm:p-6 max-w-xl mx-auto">
